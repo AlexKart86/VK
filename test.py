@@ -8,7 +8,8 @@ log_file_name = "log.txt"
 result_file = "res.csv"
 
 log = open(log_file_name, 'a')
-
+csv_file = open(result_file, 'w', newline='')
+csv_writer = csv.writer(csv_file)
 
 def parse_one_page(url):
     pg = urllib.request.urlopen(url)
@@ -25,10 +26,11 @@ def parse_one_page(url):
             for row in tbl.cssselect("tr"):
                 columns = row.cssselect("td")
                 if len(columns) >= 6:
-                    print(columns[1].get_text())
-
-
-
+                    result = [columns[0].text_content(),
+                              columns[1].text_content(),
+                              columns[2].text_content(),
+                              columns[3].text_content()]
+                    csv_writer.writerow(result)
 
 
 def process_education_form(form_name):
@@ -51,7 +53,7 @@ def process_education_form(form_name):
 
 
 #Проходимся по всем страничкам вузов
-for i in range(5, 6, 1):
+for i in range(1, 10, 1):
     base_url = "http://vstup.info/2015/"
     full_url = (base_url + "i2015i{}.html").format(i)
     try:
@@ -61,12 +63,11 @@ for i in range(5, 6, 1):
         print(full_url)
         if process_education_form("denna1"):
            log.write("Success: {} \n".format(full_url))
-
-
     except urllib.error.HTTPError as err:
         log.write("Error: " +full_url + err.msg + "\n")
         log.flush()
 log.close()
+csv_file.close()
 
 """
     t =  doc.get_element_by_id("denna1")
